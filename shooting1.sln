@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shooting1", "shooting1.csproj", "{11AC2B16-5F0E-4A3D-BEC7-89F2CD581418}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameEngine2D", "..\..\Users\Public\Documents\PSM\source\GameEngine2D\GameEngine2D.csproj", "{A36CE4AC-6436-452D-A25D-9BD87A4100EA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{11AC2B16-5F0E-4A3D-BEC7-89F2CD581418}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11AC2B16-5F0E-4A3D-BEC7-89F2CD581418}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11AC2B16-5F0E-4A3D-BEC7-89F2CD581418}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A36CE4AC-6436-452D-A25D-9BD87A4100EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A36CE4AC-6436-452D-A25D-9BD87A4100EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A36CE4AC-6436-452D-A25D-9BD87A4100EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A36CE4AC-6436-452D-A25D-9BD87A4100EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = shooting1.csproj

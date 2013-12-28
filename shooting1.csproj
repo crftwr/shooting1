@@ -34,9 +34,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Sce.PlayStation.Core" />
+    <Reference Include="Sce.PlayStation.HighLevel.GameEngine2D" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppMain.cs" />
+    <Compile Include="GameScreen.cs" />
   </ItemGroup>
   <ItemGroup>
     <ShaderProgram Include="shaders\Simple.fcg" />
@@ -46,4 +48,13 @@
     <PsmMetadata Include="app.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Sce\Sce.Psm.CSharp.targets" />
+  <ItemGroup>
+    <Content Include="textures\background.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Users\Public\Documents\PSM\source\GameEngine2D\GameEngine2D.csproj">
+      <Project>{A36CE4AC-6436-452D-A25D-9BD87A4100EA}</Project>
+      <Name>GameEngine2D</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
