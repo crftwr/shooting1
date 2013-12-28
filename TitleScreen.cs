@@ -9,23 +9,24 @@ using Sce.PlayStation.HighLevel.GameEngine2D.Base;
 
 namespace shooting1
 {
-	public static class GameScreen
+	public class TitleScreen
 	{
 		static TextureInfo background_texture;
-
+		static TextureInfo title_texture;
+		
 		static Bgm bgm;
 		static BgmPlayer bgm_player;
-
+		
 		public static Scene CreateScene()
 		{
-			Console.WriteLine("creating GameScreen");
-			
+			Console.WriteLine("creating TitleScreen");
+	
 			// Bgmを再生する
-			bgm = new Bgm( "Application/sounds/game.mp3" );
+			bgm = new Bgm( "Application/sounds/title.mp3" );
 			bgm_player = bgm.CreatePlayer();
 			bgm_player.Play();
 
-			var scene = new Scene(){ Name = "GameScene" };
+			var scene = new Scene(){ Name = "TitleScene" };
 			
 			scene.OnExitEvents += DisposeScene;
 
@@ -33,23 +34,21 @@ namespace shooting1
 			scene.Camera.SetViewFromViewport();
 	
 			// create a new TextureInfo object, used by sprite primitives
+			//background_texture = new TextureInfo( new Texture2D("/Application/textures/background.png", false ) );
 			background_texture = new TextureInfo( new Texture2D("/Application/textures/background.png", false ) );
+			title_texture = new TextureInfo( new Texture2D("/Application/textures/title.png", false ) );
 	
-			// create a new sprite
-			var sprite = new SpriteUV() { TextureInfo = background_texture };
-	
-			// make the texture 1:1 on screen
-			sprite.Quad.S = background_texture.TextureSizef;
-	
-			// center the sprite around its own .Position 
-			// (by default .Position is the lower left bit of the sprite)
-			sprite.CenterSprite();
-	
-			// put the sprite at the center of the screen
-			sprite.Position = scene.Camera.CalcBounds().Center;
-	
-			// our scene only has 2 nodes: scene->sprite
-			scene.AddChild( sprite );
+			var background_sprite = new SpriteUV() { TextureInfo = background_texture };
+			background_sprite.Quad.S = background_texture.TextureSizef;
+			background_sprite.CenterSprite();
+			background_sprite.Position = scene.Camera.CalcBounds().Center;
+			scene.AddChild( background_sprite );
+			
+			var title_sprite = new SpriteUV() { TextureInfo = title_texture };
+			title_sprite.Quad.S = title_texture.TextureSizef;
+			title_sprite.CenterSprite();
+			title_sprite.Position = scene.Camera.CalcBounds().Center;
+			scene.AddChild( title_sprite );
 			
 			scene.Schedule( (dt) =>
 			{
@@ -59,7 +58,7 @@ namespace shooting1
 				{
 					if( touch_data[i].Press )
 					{
-						var next_scene = TitleScreen.CreateScene();
+						var next_scene = GameScreen.CreateScene();
 						
 						Director.Instance.ReplaceScene( next_scene );
 					}
@@ -72,10 +71,10 @@ namespace shooting1
 		static void DisposeScene()
 		{
 			background_texture.Dispose();
-
+			title_texture.Dispose();
+			
 			bgm_player.Dispose();
 			bgm.Dispose();
 		}
 	}
 }
-

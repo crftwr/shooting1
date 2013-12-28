@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="AppMain.cs" />
     <Compile Include="GameScreen.cs" />
+    <Compile Include="TitleScreen.cs" />
   </ItemGroup>
   <ItemGroup>
     <ShaderProgram Include="shaders\Simple.fcg" />
@@ -50,6 +51,9 @@
   <Import Project="$(MSBuildExtensionsPath)\Sce\Sce.Psm.CSharp.targets" />
   <ItemGroup>
     <Content Include="textures\background.png" />
+    <Content Include="textures\title.png" />
+    <Content Include="sounds\game.mp3" />
+    <Content Include="sounds\title.mp3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Users\Public\Documents\PSM\source\GameEngine2D\GameEngine2D.csproj">
