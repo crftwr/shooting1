@@ -19,11 +19,6 @@ namespace shooting1
 		
 			Director.Instance.GL.Context.SetClearColor( Colors.Grey20 );
 	
-			// set debug flags that display rulers to debug coordinates
-			// Director.Instance.DebugFlags |= DebugFlags.DrawGrid;
-			// set the camera navigation debug flag (press left alt + mouse to navigate in 2d space)
-			Director.Instance.DebugFlags |= DebugFlags.Navigate; 
-	
 			var game_scene = GameScreen.CreateScene();
 			
 			Director.Instance.RunWithScene( game_scene );

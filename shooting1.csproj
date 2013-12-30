@@ -54,6 +54,8 @@
     <Content Include="textures\title.png" />
     <Content Include="sounds\game.mp3" />
     <Content Include="sounds\title.mp3" />
+    <Content Include="textures\player.png" />
+    <Content Include="textures\bullet.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Users\Public\Documents\PSM\source\GameEngine2D\GameEngine2D.csproj">

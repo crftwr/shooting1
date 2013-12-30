@@ -9,6 +9,7 @@ using Sce.PlayStation.HighLevel.GameEngine2D.Base;
 
 namespace shooting1
 {
+	// タイトル画面
 	public class TitleScreen
 	{
 		static TextureInfo background_texture;
@@ -16,7 +17,8 @@ namespace shooting1
 		
 		static Bgm bgm;
 		static BgmPlayer bgm_player;
-		
+
+		// シーンの作成
 		public static Scene CreateScene()
 		{
 			Console.WriteLine("creating TitleScreen");
@@ -34,7 +36,6 @@ namespace shooting1
 			scene.Camera.SetViewFromViewport();
 	
 			// create a new TextureInfo object, used by sprite primitives
-			//background_texture = new TextureInfo( new Texture2D("/Application/textures/background.png", false ) );
 			background_texture = new TextureInfo( new Texture2D("/Application/textures/background.png", false ) );
 			title_texture = new TextureInfo( new Texture2D("/Application/textures/title.png", false ) );
 	
@@ -58,9 +59,7 @@ namespace shooting1
 				{
 					if( touch_data[i].Press )
 					{
-						var next_scene = GameScreen.CreateScene();
-						
-						Director.Instance.ReplaceScene( next_scene );
+						GotoGameScreen();
 					}
 				}
 			});
@@ -68,13 +67,30 @@ namespace shooting1
 			return scene;
 		}
 		
+		// 画面切り替え前の停止処理
+		static void Stop()
+		{
+			bgm_player.Stop();
+			bgm_player.Dispose();
+		}
+		
+		// 画面の廃棄
 		static void DisposeScene()
 		{
 			background_texture.Dispose();
 			title_texture.Dispose();
 			
-			bgm_player.Dispose();
 			bgm.Dispose();
+		}
+		
+		// ゲーム画面に遷移
+		static void GotoGameScreen()
+		{
+			Stop();
+			
+			var next_scene = GameScreen.CreateScene();
+			
+			Director.Instance.ReplaceScene( next_scene );
 		}
 	}
 }
