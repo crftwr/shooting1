@@ -200,7 +200,7 @@ namespace shooting1
 				}
 				
 				// 飛行
-				if(pad.Cross.Down)
+				if(pad.Up.Down)
 				{
 					if( fly_time > 0.0f )
 					{
@@ -245,9 +245,24 @@ namespace shooting1
 				// 弾丸発射
 				if( fire_time <= 0.0f )
 				{
-					if(pad.Square.Press)
+					if(pad.AnalogRight.LengthSquared() > 0.2f
+					 && pad.AnalogRight.X > -0.5f
+					 && pad.AnalogRight.Y < 0.5f )
 					{
-						FireBullet();
+						var fire_direction = pad.AnalogRight * new Vector2(1,-1);
+						if(fire_direction.X < 0.0f)
+						{
+							fire_direction.X = 0.0f;
+						}
+						if(fire_direction.Y < 0.0f)
+						{
+							fire_direction.Y = 0.0f;
+						}
+						fire_direction = fire_direction.Normalize();
+						
+						FireBullet(ref fire_direction);
+						
+						fire_time = fire_interval;
 					}
 				}
 				else
@@ -258,11 +273,13 @@ namespace shooting1
 		}
 		
 		// 弾丸発射
-		public void FireBullet()
+		public void FireBullet( ref Vector2 direction )
 		{
 			Console.WriteLine("Fire!" + GameScreen.bulletList.Children.Count);
 			
-			var bullet = new Bullet( Position + new Vector2(50,0) ); 
+			var position = Position + new Vector2(50,0);
+			
+			var bullet = new Bullet( ref position, ref direction ); 
 			
 			GameScreen.bulletList.AddChild(bullet);
 		}
@@ -275,10 +292,13 @@ namespace shooting1
 		
 		public Vector2 speed = new Vector2(30,0);
 		
-		public Bullet( Vector2 position )
+		public Bullet( ref Vector2 position, ref Vector2 direction )
 			: base()
 		{
 			Position = position;
+			speed = direction * 10;
+			
+			Rotation = direction;
 			
 			// make the texture 1:1 on screen
 			Quad.S = GameScreen.bullet_texture.TextureSizef;
