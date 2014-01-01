@@ -35,6 +35,7 @@
     <Reference Include="System.Core" />
     <Reference Include="Sce.PlayStation.Core" />
     <Reference Include="Sce.PlayStation.HighLevel.GameEngine2D" />
+    <Reference Include="System.Json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppMain.cs" />
@@ -56,6 +57,7 @@
     <Content Include="sounds\title.mp3" />
     <Content Include="textures\player.png" />
     <Content Include="textures\bullet.png" />
+    <Content Include="jsons\level1.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Users\Public\Documents\PSM\source\GameEngine2D\GameEngine2D.csproj">

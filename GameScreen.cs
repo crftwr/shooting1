@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+using System.Text;
+using System.Json;
 
 using Sce.PlayStation.Core;
 using Sce.PlayStation.Core.Graphics;
@@ -21,6 +24,10 @@ namespace shooting1
 		
 		public static Player player;
 		public static SpriteList bulletList;
+		
+		static JsonArray leveldata;
+		static int leveldata_index;
+		static float leveldata_time;
 
 		// シーンの作成
 		public static Scene CreateScene()
@@ -59,17 +66,54 @@ namespace shooting1
 			bulletList = new SpriteList(bullet_texture);
 			scene.AddChild( bulletList );
 
-			// テスト
+			// 面データのロード
+			{
+				StreamReader sr = new StreamReader( "/Application/jsons/level1.json", Encoding.GetEncoding("utf-8") );
+				var json_string = sr.ReadToEnd();
+
+				leveldata = (JsonArray)JsonValue.Parse(json_string);
+				leveldata_index = 0;
+				leveldata_time = 0.0f;
+            }
+			
+			// タイムライン処理
 			scene.Schedule( (delta_time) =>
 			{
 				var touch_data = Input2.Touch.GetData(0);
-				
 				for( int i=0 ; i<touch_data.Length ; ++i )
 				{
 					if( touch_data[i].Press )
 					{
 						GotoTitleScreen();
 					}
+				}
+				
+				leveldata_time += delta_time;
+				while( leveldata_index < leveldata.Count )
+				{
+					var leveldata_item = (JsonObject)leveldata[leveldata_index];
+					
+					float time = leveldata_item.GetValue("time").ReadAs<float>();
+					if(time>leveldata_time){ break; }
+					
+					string type = leveldata_item.GetValue("type").ReadAs<string>();
+					
+					switch(type)
+					{
+					case "enemy1":
+						{
+							Console.WriteLine("enemy1");
+						}
+						break;
+						
+					case "goal":
+						{
+							Console.WriteLine("goal");
+						}
+						break;
+					}
+					
+					leveldata_index++;
 				}
 			});
 			
