@@ -1,20 +1,6 @@
 [
-	{
-		"time" : 1.0,
-		"type" : "enemy1",
-		"x" : 1000,
-		"y" : 300
-	},
-
-	{
-		"time" : 2.0,
-		"type" : "enemy1",
-		"x" : 1000,
-		"y" : 300
-	},
-
-	{
-		"time" : 10.0,
-		"type" : "goal"
-	}
+	{ "time" : 1.0,		"type" : "enemy1",		"x" : 1000,	"y" : 300 },
+	{ "time" : 2.0,		"type" : "enemy1",		"x" : 1000,	"y" : 330 },
+	{ "time" : 3.0,		"type" : "enemy1",		"x" : 1000,	"y" : 360 },
+	{ "time" : 10.0,	"type" : "goal"	}
 ]

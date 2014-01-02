@@ -18,16 +18,20 @@ namespace shooting1
 		public static TextureInfo background_texture;
 		public static TextureInfo player_texture;
 		public static TextureInfo bullet_texture;
+		public static TextureInfo enemy1_texture;
 
 		static Bgm bgm;
 		static BgmPlayer bgm_player;
 		
 		public static Player player;
 		public static SpriteList bulletList;
+		public static SpriteList enemy1List;
 		
 		static JsonArray leveldata;
 		static int leveldata_index;
 		static float leveldata_time;
+		
+		const float collision_distance_enemy1_bullet = 100.0f;
 
 		// シーンの作成
 		public static Scene CreateScene()
@@ -51,6 +55,7 @@ namespace shooting1
 			background_texture = new TextureInfo( new Texture2D("/Application/textures/background.png", false ) );
 			player_texture = new TextureInfo( new Texture2D("/Application/textures/player.png", false ) );
 			bullet_texture = new TextureInfo( new Texture2D("/Application/textures/bullet.png", false ) );
+			enemy1_texture = new TextureInfo( new Texture2D("/Application/textures/enemy1.png", false ) );
 	
 			// 背景
 			var background = new Background(background_texture);
@@ -66,6 +71,10 @@ namespace shooting1
 			bulletList = new SpriteList(bullet_texture);
 			scene.AddChild( bulletList );
 
+			// 敵リスト
+			enemy1List = new SpriteList(enemy1_texture);
+			scene.AddChild( enemy1List );
+
 			// 面データのロード
 			{
 				StreamReader sr = new StreamReader( "/Application/jsons/level1.json", Encoding.GetEncoding("utf-8") );
@@ -75,8 +84,8 @@ namespace shooting1
 				leveldata_index = 0;
 				leveldata_time = 0.0f;
             }
-			
-			// タイムライン処理
+	
+			// 毎フレーム処理
 			scene.Schedule( (delta_time) =>
 			{
 				var touch_data = Input2.Touch.GetData(0);
@@ -88,6 +97,7 @@ namespace shooting1
 					}
 				}
 				
+				// タイムライン処理
 				leveldata_time += delta_time;
 				while( leveldata_index < leveldata.Count )
 				{
@@ -103,6 +113,12 @@ namespace shooting1
 					case "enemy1":
 						{
 							Console.WriteLine("enemy1");
+		
+							float x = leveldata_item.GetValue("x").ReadAs<float>();
+							float y = leveldata_item.GetValue("y").ReadAs<float>();
+							var position = new Vector2(x,y);
+						
+							CreateEnemy1( ref position );
 						}
 						break;
 						
@@ -133,6 +149,30 @@ namespace shooting1
 						continue;
 					}
 					
+					// 敵との衝突
+					{
+						bool hit = false;
+						for( int enemy_index=0 ; enemy_index<enemy1List.Children.Count; ++enemy_index )
+						{
+							var enemy = enemy1List.Children[enemy_index];
+							
+							if( Vector2.DistanceSquared( enemy.Position, bullet.Position ) < collision_distance_enemy1_bullet*collision_distance_enemy1_bullet )
+							{
+								enemy1List.Children.Remove(enemy);
+								
+								hit = true;
+		
+								break;
+							}
+						}
+						
+						if(hit)
+						{
+							bulletList.Children.RemoveAt(i);
+							continue;
+						}
+					}
+					
 					++i;
 				}
 			});
@@ -153,6 +193,7 @@ namespace shooting1
 			background_texture.Dispose();
 			player_texture.Dispose();
 			bullet_texture.Dispose();
+			enemy1_texture.Dispose();
 
 			bgm.Dispose();
 		}
@@ -165,6 +206,12 @@ namespace shooting1
 			var next_scene = TitleScreen.CreateScene();
 			
 			Director.Instance.ReplaceScene( next_scene );
+		}
+		
+		static void CreateEnemy1( ref Vector2 position )
+		{
+			var enemy = new Enemy1(ref position);
+			enemy1List.AddChild( enemy );
 		}
 	}
 
@@ -350,6 +397,52 @@ namespace shooting1
 			// center the sprite around its own .Position 
 			// (by default .Position is the lower left bit of the sprite)
 			CenterSprite();
+		}
+	}
+	
+	public class Enemy : SpriteUV
+	{
+		public Enemy()
+			: base()
+		{
+		}
+		
+		public bool OutsideOfScreen()
+		{
+			return ( Position.X < -100
+			      || Position.X > 960+100
+			      || Position.Y < -100
+			      || Position.Y > 544+100 );
+		}
+	}
+
+	// 敵1
+	public class Enemy1 : Enemy
+	{
+		static Vector2 speed = new Vector2(-5,0);
+		
+		public Enemy1( ref Vector2 position )
+			: base()
+		{
+			Position = position;
+			
+			// make the texture 1:1 on screen
+			Quad.S = GameScreen.enemy1_texture.TextureSizef;
+	
+			// center the sprite around its own .Position 
+			// (by default .Position is the lower left bit of the sprite)
+			CenterSprite();
+
+			// 毎フレーム処理		
+			Schedule( (delta_time) => 
+			{
+				Position = Position + speed;
+				
+				if( OutsideOfScreen() )
+				{
+					Parent.RemoveChild(this,true);
+				}
+			});
 		}
 	}
 }

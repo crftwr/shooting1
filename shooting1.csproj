@@ -58,6 +58,7 @@
     <Content Include="textures\player.png" />
     <Content Include="textures\bullet.png" />
     <Content Include="jsons\level1.json" />
+    <Content Include="textures\enemy1.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Users\Public\Documents\PSM\source\GameEngine2D\GameEngine2D.csproj">
