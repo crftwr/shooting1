@@ -19,10 +19,12 @@ namespace shooting1
 		public static TextureInfo player_texture;
 		public static TextureInfo bullet_texture;
 		public static TextureInfo enemy1_texture;
+		public static TextureInfo fire1_texture;
 
 		static Bgm bgm;
 		static BgmPlayer bgm_player;
 		
+		public static Scene scene;
 		public static Player player;
 		public static SpriteList bulletList;
 		public static SpriteList enemy1List;
@@ -31,7 +33,7 @@ namespace shooting1
 		static int leveldata_index;
 		static float leveldata_time;
 		
-		const float collision_distance_enemy1_bullet = 100.0f;
+		const float collision_distance_enemy1_bullet2 = 40.0f * 40.0f;
 
 		// シーンの作成
 		public static Scene CreateScene()
@@ -44,7 +46,7 @@ namespace shooting1
 			bgm_player.Loop = true;
 			bgm_player.Play();
 
-			var scene = new Scene(){ Name = "GameScene" };
+			scene = new Scene(){ Name = "GameScene" };
 			
 			scene.OnExitEvents += DisposeScene;
 
@@ -56,6 +58,7 @@ namespace shooting1
 			player_texture = new TextureInfo( new Texture2D("/Application/textures/player.png", false ) );
 			bullet_texture = new TextureInfo( new Texture2D("/Application/textures/bullet.png", false ) );
 			enemy1_texture = new TextureInfo( new Texture2D("/Application/textures/enemy1.png", false ) );
+			fire1_texture = new TextureInfo( new Texture2D("/Application/textures/fire1.png", false ) );
 	
 			// 背景
 			var background = new Background(background_texture);
@@ -149,15 +152,18 @@ namespace shooting1
 						continue;
 					}
 					
-					// 敵との衝突
+					// 敵と弾丸の衝突
 					{
 						bool hit = false;
 						for( int enemy_index=0 ; enemy_index<enemy1List.Children.Count; ++enemy_index )
 						{
-							var enemy = enemy1List.Children[enemy_index];
+							var enemy = (Enemy)enemy1List.Children[enemy_index];
 							
-							if( Vector2.DistanceSquared( enemy.Position, bullet.Position ) < collision_distance_enemy1_bullet*collision_distance_enemy1_bullet )
+							if( Vector2.DistanceSquared( enemy.Position, bullet.Position ) < collision_distance_enemy1_bullet2 )
 							{
+								var position = enemy.Position;
+								CreateExplosion1(ref position);
+								
 								enemy1List.Children.Remove(enemy);
 								
 								hit = true;
@@ -194,6 +200,7 @@ namespace shooting1
 			player_texture.Dispose();
 			bullet_texture.Dispose();
 			enemy1_texture.Dispose();
+			fire1_texture.Dispose();
 
 			bgm.Dispose();
 		}
@@ -212,6 +219,44 @@ namespace shooting1
 		{
 			var enemy = new Enemy1(ref position);
 			enemy1List.AddChild( enemy );
+		}
+		
+		static void CreateExplosion1( ref Vector2 position )
+		{
+			Particles fire_node= new Particles(30);
+			ParticleSystem fire = fire_node.ParticleSystem;
+			fire.TextureInfo = fire1_texture;
+			//fire.BlendMode = BlendMode.PremultipliedAlpha;
+	
+			fire.Emit.Position = position;
+			fire.Emit.PositionVar = new Vector2(30,30);
+			fire.Emit.Velocity = new Vector2( 0.0f, 0.0f );
+			fire.Emit.VelocityVar = new Vector2( 100f, 100f );
+			fire.Emit.ForwardMomentum = 0.0f;
+			fire.Emit.AngularMomentun = 0.0f;
+			fire.Emit.LifeSpan = 0.5f;
+			fire.Emit.LifeSpanRelVar = 0.0f;
+			fire.Emit.WaitTime = 0.0f;
+			fire.Emit.ColorStart = Colors.Red;
+			fire.Emit.ColorStartVar = new Vector4(0.0f,0.0f,0.0f,0.0f);
+			fire.Emit.ColorEnd = new Vector4(1.0f,1.0f,1.0f,0.0f);
+			fire.Emit.ColorEndVar = new Vector4(0.2f,0.0f,0.0f,0.0f);
+			fire.Emit.ScaleStart = 10;
+			fire.Emit.ScaleStartRelVar = 3;
+			fire.Emit.ScaleEnd = 20;
+			fire.Emit.ScaleEndRelVar = 5;
+			fire.Simulation.Fade = 0.1f;
+			
+			// パーティクル消滅処理
+			var action = new Sequence();
+			action.Add( new DelayTime(0.5f) );
+			action.Add( new CallFunc( () => {
+				fire_node.Dispose();
+				fire_node.Parent.RemoveChild(fire_node,true);
+			}));
+			fire_node.RunAction(action);
+	
+			scene.AddChild(fire_node);
 		}
 	}
 
