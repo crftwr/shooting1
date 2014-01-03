@@ -35,8 +35,10 @@ namespace shooting1
 		static int leveldata_index;
 		static float leveldata_time;
 		
-		const float collision_distance_enemy1_bullet2 = 40.0f * 40.0f;
-		const float collision_distance_enemy2_bullet2 = 40.0f * 40.0f;
+		public const float collision_distance_enemy1_bullet2 = 40.0f * 40.0f;
+		public const float collision_distance_enemy2_bullet2 = 40.0f * 40.0f;
+		public const float collision_distance_enemy1_player2 = 40.0f * 40.0f;
+		public const float collision_distance_enemy2_player2 = 40.0f * 40.0f;
 
 		// シーンの作成
 		public static Scene CreateScene()
@@ -166,24 +168,24 @@ namespace shooting1
 					if( bullet.Position.X < -100.0f || bullet.Position.X > 960.0f+100.0f
 					 || bullet.Position.Y < -100.0f || bullet.Position.Y > 544.0f+100.0f )
 					{
-						bulletList.Children.RemoveAt(i);
+						bulletList.RemoveChild(bullet,true);
 						continue;
 					}
 					
 					// 敵と弾丸の衝突
 					{
-						Func<SpriteList,Bullet,float,bool> HitTestEnemyBullet = (enemyList,bullet1,distance2) =>
+						Func<SpriteList,float,bool> HitTestEnemyBullet = (enemyList,distance2) =>
 						{
 							for( int enemy_index=0 ; enemy_index<enemyList.Children.Count; ++enemy_index )
 							{
 								var enemy = (Enemy)enemyList.Children[enemy_index];
 								
-								if( Vector2.DistanceSquared( enemy.Position, bullet1.Position ) < distance2 )
+								if( Vector2.DistanceSquared( enemy.Position, bullet.Position ) < distance2 )
 								{
 									var position = enemy.Position;
 									CreateExplosion1(ref position);
 									
-									enemyList.Children.Remove(enemy);
+									enemyList.RemoveChild(enemy,true);
 									
 									return true;
 								}
@@ -193,8 +195,8 @@ namespace shooting1
 						};
 						
 						bool hit = false;
-						if(!hit){ hit = HitTestEnemyBullet(enemy1List,bullet,collision_distance_enemy1_bullet2); }
-						if(!hit){ hit = HitTestEnemyBullet(enemy2List,bullet,collision_distance_enemy2_bullet2); }
+						if(!hit){ hit = HitTestEnemyBullet(enemy1List,collision_distance_enemy1_bullet2); }
+						if(!hit){ hit = HitTestEnemyBullet(enemy2List,collision_distance_enemy2_bullet2); }
 						if(hit)
 						{
 							bulletList.Children.RemoveAt(i);
@@ -250,7 +252,7 @@ namespace shooting1
 			enemy2List.AddChild( enemy );
 		}
 		
-		static void CreateExplosion1( ref Vector2 position )
+		public static void CreateExplosion1( ref Vector2 position )
 		{
 			Particles fire_node= new Particles(30);
 			ParticleSystem fire = fire_node.ParticleSystem;
@@ -432,6 +434,42 @@ namespace shooting1
 				else
 				{
 					fire_time -= delta_time;
+				}
+
+				// 敵とプレイヤの衝突
+				{
+					Func<SpriteList,float,bool> HitTestEnemyPlayer = (enemyList,distance2) =>
+					{
+						for( int enemy_index=0 ; enemy_index<enemyList.Children.Count; ++enemy_index )
+						{
+							var enemy = (Enemy)enemyList.Children[enemy_index];
+							
+							if( Vector2.DistanceSquared( enemy.Position, Position ) < distance2 )
+							{
+								var position = enemy.Position;
+								GameScreen.CreateExplosion1(ref position);
+								
+								enemyList.RemoveChild(enemy,true);
+								
+								return true;
+							}
+						}
+						
+						return false;
+					};
+					
+					bool hit = false;
+					if(!hit){ hit = HitTestEnemyPlayer(GameScreen.enemy1List,GameScreen.collision_distance_enemy1_player2); }
+					if(!hit){ hit = HitTestEnemyPlayer(GameScreen.enemy2List,GameScreen.collision_distance_enemy2_player2); }
+					if(hit)
+					{
+						var position = Position;
+						GameScreen.CreateExplosion1(ref position);
+						
+						Parent.RemoveChild(this,true);
+						
+						return;
+					}
 				}
 			});
 		}
