@@ -19,6 +19,7 @@ namespace shooting1
 		public static TextureInfo player_texture;
 		public static TextureInfo bullet_texture;
 		public static TextureInfo enemy1_texture;
+		public static TextureInfo enemy2_texture;
 		public static TextureInfo fire1_texture;
 
 		static Bgm bgm;
@@ -28,12 +29,14 @@ namespace shooting1
 		public static Player player;
 		public static SpriteList bulletList;
 		public static SpriteList enemy1List;
+		public static SpriteList enemy2List;
 		
 		static JsonArray leveldata;
 		static int leveldata_index;
 		static float leveldata_time;
 		
 		const float collision_distance_enemy1_bullet2 = 40.0f * 40.0f;
+		const float collision_distance_enemy2_bullet2 = 40.0f * 40.0f;
 
 		// シーンの作成
 		public static Scene CreateScene()
@@ -58,6 +61,7 @@ namespace shooting1
 			player_texture = new TextureInfo( new Texture2D("/Application/textures/player.png", false ) );
 			bullet_texture = new TextureInfo( new Texture2D("/Application/textures/bullet.png", false ) );
 			enemy1_texture = new TextureInfo( new Texture2D("/Application/textures/enemy1.png", false ) );
+			enemy2_texture = new TextureInfo( (Texture2D)enemy1_texture.Texture.ShallowClone() );
 			fire1_texture = new TextureInfo( new Texture2D("/Application/textures/fire1.png", false ) );
 	
 			// 背景
@@ -77,6 +81,8 @@ namespace shooting1
 			// 敵リスト
 			enemy1List = new SpriteList(enemy1_texture);
 			scene.AddChild( enemy1List );
+			enemy2List = new SpriteList(enemy2_texture);
+			scene.AddChild( enemy2List );
 
 			// 面データのロード
 			{
@@ -125,6 +131,18 @@ namespace shooting1
 						}
 						break;
 						
+					case "enemy2":
+						{
+							Console.WriteLine("enemy2");
+		
+							float x = leveldata_item.GetValue("x").ReadAs<float>();
+							float y = leveldata_item.GetValue("y").ReadAs<float>();
+							var position = new Vector2(x,y);
+						
+							CreateEnemy2( ref position );
+						}
+						break;
+						
 					case "goal":
 						{
 							Console.WriteLine("goal");
@@ -154,24 +172,29 @@ namespace shooting1
 					
 					// 敵と弾丸の衝突
 					{
-						bool hit = false;
-						for( int enemy_index=0 ; enemy_index<enemy1List.Children.Count; ++enemy_index )
+						Func<SpriteList,Bullet,float,bool> HitTestEnemyBullet = (enemyList,bullet1,distance2) =>
 						{
-							var enemy = (Enemy)enemy1List.Children[enemy_index];
-							
-							if( Vector2.DistanceSquared( enemy.Position, bullet.Position ) < collision_distance_enemy1_bullet2 )
+							for( int enemy_index=0 ; enemy_index<enemyList.Children.Count; ++enemy_index )
 							{
-								var position = enemy.Position;
-								CreateExplosion1(ref position);
+								var enemy = (Enemy)enemyList.Children[enemy_index];
 								
-								enemy1List.Children.Remove(enemy);
-								
-								hit = true;
-		
-								break;
+								if( Vector2.DistanceSquared( enemy.Position, bullet1.Position ) < distance2 )
+								{
+									var position = enemy.Position;
+									CreateExplosion1(ref position);
+									
+									enemyList.Children.Remove(enemy);
+									
+									return true;
+								}
 							}
-						}
+							
+							return false;
+						};
 						
+						bool hit = false;
+						if(!hit){ hit = HitTestEnemyBullet(enemy1List,bullet,collision_distance_enemy1_bullet2); }
+						if(!hit){ hit = HitTestEnemyBullet(enemy2List,bullet,collision_distance_enemy2_bullet2); }
 						if(hit)
 						{
 							bulletList.Children.RemoveAt(i);
@@ -185,7 +208,7 @@ namespace shooting1
 			
 			return scene;
 		}
-		
+
 		// 画面切り替え前の停止処理
 		static void Stop()
 		{
@@ -221,12 +244,17 @@ namespace shooting1
 			enemy1List.AddChild( enemy );
 		}
 		
+		static void CreateEnemy2( ref Vector2 position )
+		{
+			var enemy = new Enemy2(ref position);
+			enemy2List.AddChild( enemy );
+		}
+		
 		static void CreateExplosion1( ref Vector2 position )
 		{
 			Particles fire_node= new Particles(30);
 			ParticleSystem fire = fire_node.ParticleSystem;
 			fire.TextureInfo = fire1_texture;
-			//fire.BlendMode = BlendMode.PremultipliedAlpha;
 	
 			fire.Emit.Position = position;
 			fire.Emit.PositionVar = new Vector2(30,30);
@@ -490,5 +518,45 @@ namespace shooting1
 			});
 		}
 	}
+
+	// 敵2
+	public class Enemy2 : Enemy
+	{
+		static Vector2 speed = new Vector2(-3,0);
+		
+		Vector2 basePosition;
+		float r = 0.0f;
+		const float waveScale = 50.0f;
+		const float waveSpeed = 3.0f;
+		
+		public Enemy2( ref Vector2 position )
+			: base()
+		{
+			basePosition = position;
+			Position = basePosition + new Vector2( 0, FMath.Sin(r) * waveScale );
+			
+			// make the texture 1:1 on screen
+			Quad.S = GameScreen.enemy1_texture.TextureSizef;
+	
+			// center the sprite around its own .Position 
+			// (by default .Position is the lower left bit of the sprite)
+			CenterSprite();
+
+			// 毎フレーム処理		
+			Schedule( (delta_time) => 
+			{
+				r += delta_time * waveSpeed;
+				
+				basePosition += speed;
+				Position = basePosition + new Vector2( 0, FMath.Sin(r) * waveScale );
+				
+				if( OutsideOfScreen() )
+				{
+					Parent.RemoveChild(this,true);
+				}
+			});
+		}
+	}
+
 }
 
