@@ -51,7 +51,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Sce\Sce.Psm.CSharp.targets" />
   <ItemGroup>
-    <Content Include="textures\background.png" />
     <Content Include="textures\title.png" />
     <Content Include="sounds\game.mp3" />
     <Content Include="sounds\title.mp3" />
@@ -60,6 +59,9 @@
     <Content Include="jsons\level1.json" />
     <Content Include="textures\enemy1.png" />
     <Content Include="textures\fire1.png" />
+    <Content Include="textures\far.png" />
+    <Content Include="textures\ground.png" />
+    <Content Include="textures\sky.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Users\Public\Documents\PSM\source\GameEngine2D\GameEngine2D.csproj">

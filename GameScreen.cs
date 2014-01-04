@@ -15,7 +15,9 @@ namespace shooting1
 	// ゲーム画面
 	public static class GameScreen
 	{
-		public static TextureInfo background_texture;
+		public static TextureInfo sky_texture;
+		public static TextureInfo far_texture;
+		public static TextureInfo ground_texture;
 		public static TextureInfo player_texture;
 		public static TextureInfo bullet_texture;
 		public static TextureInfo enemy1_texture;
@@ -30,6 +32,9 @@ namespace shooting1
 		public static SpriteList bulletList;
 		public static SpriteList enemy1List;
 		public static SpriteList enemy2List;
+		
+		static float scroll_position;
+		const float scroll_speed = 100.0f;
 		
 		static JsonArray leveldata;
 		static int leveldata_index;
@@ -59,7 +64,9 @@ namespace shooting1
 			scene.Camera.SetViewFromViewport();
 	
 			// テクスチャロード
-			background_texture = new TextureInfo( new Texture2D("/Application/textures/background.png", false ) );
+			sky_texture = new TextureInfo( new Texture2D("/Application/textures/sky.png", false ) );
+			far_texture = new TextureInfo( new Texture2D("/Application/textures/far.png", false ) );
+			ground_texture = new TextureInfo( new Texture2D("/Application/textures/ground.png", false ) );
 			player_texture = new TextureInfo( new Texture2D("/Application/textures/player.png", false ) );
 			bullet_texture = new TextureInfo( new Texture2D("/Application/textures/bullet.png", false ) );
 			enemy1_texture = new TextureInfo( new Texture2D("/Application/textures/enemy1.png", false ) );
@@ -67,8 +74,8 @@ namespace shooting1
 			fire1_texture = new TextureInfo( new Texture2D("/Application/textures/fire1.png", false ) );
 	
 			// 背景
-			var background = new Background(background_texture);
-			background.Position = scene.Camera.CalcBounds().Center;
+			var background = new Background( sky_texture, far_texture, ground_texture );
+			//background.Position = scene.Camera.CalcBounds().Center;
 			scene.AddChild( background );
 
 			// プレイヤーキャラクタ
@@ -107,6 +114,10 @@ namespace shooting1
 						GotoTitleScreen();
 					}
 				}
+				
+				// 背景スクロール
+				scroll_position += scroll_speed * delta_time;
+				background.Scroll( scroll_position );
 				
 				// タイムライン処理
 				leveldata_time += delta_time;
@@ -221,7 +232,9 @@ namespace shooting1
 		// 画面の廃棄
 		static void DisposeScene()
 		{
-			background_texture.Dispose();
+			sky_texture.Dispose();
+			far_texture.Dispose();
+			ground_texture.Dispose();
 			player_texture.Dispose();
 			bullet_texture.Dispose();
 			enemy1_texture.Dispose();
@@ -293,15 +306,54 @@ namespace shooting1
 	// 背景
 	public class Background : SpriteUV
 	{
-		public Background( TextureInfo texture_info )
-			: base(texture_info)
+		SpriteUV [] far_layers;
+		SpriteUV [] ground_layers;
+		
+		public Background( TextureInfo sky_texture, TextureInfo far_texture, TextureInfo ground_texture )
+			: base(sky_texture)
 		{
-			// make the texture 1:1 on screen
-			Quad.S = texture_info.TextureSizef;
+			Quad.S = new Vector2(960,544);
 	
-			// center the sprite around its own .Position 
-			// (by default .Position is the lower left bit of the sprite)
-			CenterSprite();
+			//CenterSprite();
+	
+			far_layers = new SpriteUV[2];
+			for( int i=0 ; i<far_layers.Length ; ++i )
+			{
+				far_layers[i] = new SpriteUV(far_texture);
+
+				far_layers[i].Quad.S = new Vector2(960,544);
+	
+				AddChild(far_layers[i]);
+			}
+			
+			ground_layers = new SpriteUV[2];
+			for( int i=0 ; i<ground_layers.Length ; ++i )
+			{
+				ground_layers[i] = new SpriteUV(ground_texture);
+
+				ground_layers[i].Quad.S = new Vector2(960,544);
+	
+				AddChild(ground_layers[i]);
+			}
+			
+			Scroll(0.0f);
+		}
+		
+		public void Scroll( float position )
+		{
+			{
+				var far_position = (position * 0.5f) % 960.0f;
+				
+				far_layers[0].Position = new Vector2(-far_position,0);
+				far_layers[1].Position = new Vector2(-far_position+960,0);
+			}
+
+			{
+				var ground_position = position % 960.0f;
+				
+				ground_layers[0].Position = new Vector2(-ground_position,0);
+				ground_layers[1].Position = new Vector2(-ground_position+960,0);
+			}
 		}
 	}
 	
