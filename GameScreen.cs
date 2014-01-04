@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Json;
+using System.Diagnostics;
 
 using Sce.PlayStation.Core;
 using Sce.PlayStation.Core.Graphics;
@@ -36,9 +37,11 @@ namespace shooting1
 		static float scroll_position;
 		const float scroll_speed = 100.0f;
 		
-		static JsonArray leveldata;
-		static int leveldata_index;
-		static float leveldata_time;
+		static JsonArray events;
+		static int events_index;
+		
+		static float [] hightmap;
+		const int hightmap_granularity = 16;
 		
 		public const float collision_distance_enemy1_bullet2 = 40.0f * 40.0f;
 		public const float collision_distance_enemy2_bullet2 = 40.0f * 40.0f;
@@ -98,9 +101,13 @@ namespace shooting1
 				StreamReader sr = new StreamReader( "/Application/jsons/level1.json", Encoding.GetEncoding("utf-8") );
 				var json_string = sr.ReadToEnd();
 
-				leveldata = (JsonArray)JsonValue.Parse(json_string);
-				leveldata_index = 0;
-				leveldata_time = 0.0f;
+				var leveldata = (JsonObject)JsonValue.Parse(json_string);
+				
+				var hights = (JsonArray)leveldata.GetValue("hight");
+				PrepareHightmap(hights);
+				
+				events = (JsonArray)leveldata.GetValue("events");
+				events_index = 0;
             }
 	
 			// 毎フレーム処理
@@ -120,13 +127,12 @@ namespace shooting1
 				background.Scroll( scroll_position );
 				
 				// タイムライン処理
-				leveldata_time += delta_time;
-				while( leveldata_index < leveldata.Count )
+				while( events_index < events.Count )
 				{
-					var leveldata_item = (JsonObject)leveldata[leveldata_index];
+					var leveldata_item = (JsonObject)events[events_index];
 					
-					float time = leveldata_item.GetValue("time").ReadAs<float>();
-					if(time>leveldata_time){ break; }
+					float scroll = leveldata_item.GetValue("scroll").ReadAs<float>();
+					if(scroll>scroll_position){ break; }
 					
 					string type = leveldata_item.GetValue("type").ReadAs<string>();
 					
@@ -161,9 +167,14 @@ namespace shooting1
 							Console.WriteLine("goal");
 						}
 						break;
+						
+					default:
+						//Debug.Assert(false); // 効かない、、、
+						break;
+					
 					}
 					
-					leveldata_index++;
+					events_index++;
 				}
 			});
 			
@@ -251,6 +262,54 @@ namespace shooting1
 			var next_scene = TitleScreen.CreateScene();
 			
 			Director.Instance.ReplaceScene( next_scene );
+		}
+		
+		static void PrepareHightmap( JsonArray hight_array )
+		{
+			hightmap = new float[960 * 10 / hightmap_granularity];
+			
+			for( int i=0 ; i<hightmap.Length ; ++i )
+			{
+				hightmap[i] = 100.0f;
+			}
+			
+			var first_hight = (JsonObject)hight_array[0];
+			var prev_position = new Vector2( first_hight.GetValue("x").ReadAs<float>(), first_hight.GetValue("y").ReadAs<float>() );
+			
+			for( int i=1 ; i<hight_array.Count ; ++i )
+			{
+				var hight = hight_array[i];
+				var position = new Vector2( hight.GetValue("x").ReadAs<float>(), hight.GetValue("y").ReadAs<float>() );
+				
+				for( int x=(int)prev_position.X/hightmap_granularity ; x<(int)position.X/hightmap_granularity ; ++x )
+				{
+					hightmap[x] = Vector2.Lerp( prev_position, position, ((float)x*hightmap_granularity-prev_position.X)/(position.X-prev_position.X) ).Y;
+					
+					Console.WriteLine( String.Format("{0},{1}",x,hightmap[x]) );
+					
+				}
+
+				prev_position = position;
+			}
+		}
+		
+		public static float GetHight( float x )
+		{
+			int i = (int)(x / hightmap_granularity);
+			
+			if(i+1<hightmap.Length)
+			{
+				return FMath.Lerp( hightmap[i], hightmap[i+1], (x-i*hightmap_granularity)/hightmap_granularity );
+			}
+			else
+			{
+				return 100.0f;
+			}
+		}
+		
+		public static float GetHightInScreenSpace( float x )
+		{
+			return GetHight( x + scroll_position );
 		}
 		
 		static void CreateEnemy1( ref Vector2 position )
@@ -369,7 +428,7 @@ namespace shooting1
 		static Vector2 air_friction = new Vector2(0.98f,0.98f);
 		static Vector2 ground_friction = new Vector2(0.80f,1.0f);
 		
-		const float ground_level = 100.0f;
+		//const float ground_level = 100.0f;
 		
 		Vector2 speed = new Vector2(0,0);
 		bool flying = false;
@@ -448,7 +507,7 @@ namespace shooting1
 				Position += speed;
 
 				// 地面との衝突
-				if( Position.Y > ground_level )
+				if( Position.Y > GameScreen.GetHightInScreenSpace(Position.X) )
 				{
 					flying = true;
 				}
@@ -457,7 +516,7 @@ namespace shooting1
 					flying = false;
 
 					speed.Y = 0.0f;
-					Position = new Vector2(Position.X,100.0f);
+					Position = new Vector2( Position.X, GameScreen.GetHightInScreenSpace(Position.X) );
 				}
 				
 				// 弾丸発射
@@ -531,7 +590,7 @@ namespace shooting1
 		{
 			Console.WriteLine("Fire!" + GameScreen.bulletList.Children.Count);
 			
-			var position = Position + new Vector2(50,0);
+			var position = Position + direction * 50;
 			
 			var bullet = new Bullet( ref position, ref direction ); 
 			
@@ -563,6 +622,7 @@ namespace shooting1
 		}
 	}
 	
+	// 敵ベースクラス
 	public class Enemy : SpriteUV
 	{
 		public Enemy()

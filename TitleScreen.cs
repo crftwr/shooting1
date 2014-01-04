@@ -12,7 +12,7 @@ namespace shooting1
 	// タイトル画面
 	public class TitleScreen
 	{
-		static TextureInfo background_texture;
+		static TextureInfo sky_texture;
 		static TextureInfo title_texture;
 		
 		static Bgm bgm;
@@ -36,11 +36,11 @@ namespace shooting1
 			scene.Camera.SetViewFromViewport();
 	
 			// create a new TextureInfo object, used by sprite primitives
-			background_texture = new TextureInfo( new Texture2D("/Application/textures/background.png", false ) );
+			sky_texture = new TextureInfo( new Texture2D("/Application/textures/sky.png", false ) );
 			title_texture = new TextureInfo( new Texture2D("/Application/textures/title.png", false ) );
 	
-			var background_sprite = new SpriteUV() { TextureInfo = background_texture };
-			background_sprite.Quad.S = background_texture.TextureSizef;
+			var background_sprite = new SpriteUV() { TextureInfo = sky_texture };
+			background_sprite.Quad.S = sky_texture.TextureSizef;
 			background_sprite.CenterSprite();
 			background_sprite.Position = scene.Camera.CalcBounds().Center;
 			scene.AddChild( background_sprite );
@@ -77,7 +77,7 @@ namespace shooting1
 		// 画面の廃棄
 		static void DisposeScene()
 		{
-			background_texture.Dispose();
+			sky_texture.Dispose();
 			title_texture.Dispose();
 			
 			bgm.Dispose();

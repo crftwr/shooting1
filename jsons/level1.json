@@ -1,11 +1,20 @@
-[
-	{ "time" : 1.0,		"type" : "enemy1",		"x" : 1000,	"y" : 300 },
-	{ "time" : 2.0,		"type" : "enemy1",		"x" : 1000,	"y" : 330 },
-	{ "time" : 3.0,		"type" : "enemy1",		"x" : 1000,	"y" : 360 },
+{
+	"hight" : [
+		{ "x" : 0, 		"y": 100 },
+		{ "x" : 1000, 	"y": 100 },
+		{ "x" : 1500, 	"y": 200 },
+		{ "x" : 1700, 	"y": 100 }
+	],
 
-	{ "time" : 4.0,		"type" : "enemy2",		"x" : 1000,	"y" : 300 },
-	{ "time" : 5.0,		"type" : "enemy2",		"x" : 1000,	"y" : 330 },
-	{ "time" : 6.0,		"type" : "enemy2",		"x" : 1000,	"y" : 360 },
-
-	{ "time" : 10.0,	"type" : "goal"	}
-]
+	"events" : [
+		{ "scroll" : 100.0,		"type" : "enemy1",		"x" : 1000,	"y" : 300 },
+		{ "scroll" : 200.0,		"type" : "enemy1",		"x" : 1000,	"y" : 330 },
+		{ "scroll" : 300.0,		"type" : "enemy1",		"x" : 1000,	"y" : 360 },
+	
+		{ "scroll" : 400.0,		"type" : "enemy2",		"x" : 1000,	"y" : 300 },
+		{ "scroll" : 500.0,		"type" : "enemy2",		"x" : 1000,	"y" : 330 },
+		{ "scroll" : 600.0,		"type" : "enemy2",		"x" : 1000,	"y" : 360 },
+	
+		{ "scroll" : 1000.0,	"type" : "goal"	}	
+	]
+}
