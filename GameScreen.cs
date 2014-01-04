@@ -40,8 +40,8 @@ namespace shooting1
 		static JsonArray events;
 		static int events_index;
 		
-		static float [] hightmap;
-		const int hightmap_granularity = 16;
+		public static float [] hightmap;
+		public const int hightmap_granularity = 16;
 		
 		public const float collision_distance_enemy1_bullet2 = 40.0f * 40.0f;
 		public const float collision_distance_enemy2_bullet2 = 40.0f * 40.0f;
@@ -366,7 +366,7 @@ namespace shooting1
 	public class Background : SpriteUV
 	{
 		SpriteUV [] far_layers;
-		SpriteUV [] ground_layers;
+		SpriteList ground_sprite_list;
 		
 		public Background( TextureInfo sky_texture, TextureInfo far_texture, TextureInfo ground_texture )
 			: base(sky_texture)
@@ -385,14 +385,16 @@ namespace shooting1
 				AddChild(far_layers[i]);
 			}
 			
-			ground_layers = new SpriteUV[2];
-			for( int i=0 ; i<ground_layers.Length ; ++i )
+			ground_sprite_list = new SpriteList( ground_texture );
+			AddChild(ground_sprite_list);
+			
+			for( int i=0 ; i<960/GameScreen.hightmap_granularity+1 ; ++i )
 			{
-				ground_layers[i] = new SpriteUV(ground_texture);
+				var sprite = new SpriteUV();
 
-				ground_layers[i].Quad.S = new Vector2(960,544);
+				sprite.Quad.S = new Vector2(GameScreen.hightmap_granularity,GameScreen.hightmap_granularity);
 	
-				AddChild(ground_layers[i]);
+				ground_sprite_list.AddChild(sprite);
 			}
 			
 			Scroll(0.0f);
@@ -406,12 +408,19 @@ namespace shooting1
 				far_layers[0].Position = new Vector2(-far_position,0);
 				far_layers[1].Position = new Vector2(-far_position+960,0);
 			}
-
+			
+			if(GameScreen.hightmap!=null)
 			{
+				int first = (int)( position / GameScreen.hightmap_granularity );
+				for( int i=first ; i<first+ground_sprite_list.Children.Count ; ++i )
+				{
+					var sprite = ground_sprite_list.Children[i-first];
+					
+					sprite.Position = new Vector2( i*GameScreen.hightmap_granularity-position, GameScreen.hightmap[i] );
+				}
+				
 				var ground_position = position % 960.0f;
 				
-				ground_layers[0].Position = new Vector2(-ground_position,0);
-				ground_layers[1].Position = new Vector2(-ground_position+960,0);
 			}
 		}
 	}
